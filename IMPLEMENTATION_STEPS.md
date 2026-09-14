@@ -40,10 +40,10 @@ A flat, sequential build list — no week numbers. Check WEEKLY_ROADMAP.md if yo
 - [x] 34. Event Store — own database (executive_observation_dev), append-only + trigger-enforced, hash-chained evidence proven to catch tampering even when the trigger itself is bypassed by a superuser (11/11 observation tests passing)
 - [x] 35. Projection engine — raw events folded into a per-run summary (status, step count, duration); cost/coverage honestly omitted, no real data source yet. Fixed a real bug along the way: an earlier tamper test was permanently corrupting the shared dev DB by committing instead of rolling back. 121/121 tests passing across all 5 packages.
 - [x] 36. Observation API — `GET /observation/v1/runs/{trace_id}` snapshot + `GET /observation/v1/events/stream` resumable SSE (Last-Event-ID honored, no gaps/repeats proven). Along the way, found and fixed a real psycopg3 footgun: an un-transacted read before a write left a dangling transaction invisible to other connections — fixed via autocommit=True on test connections (both observation and control-api). 129/129 tests passing across all 5 packages. **Week 13-14 (Observation Plane) complete.**
-- [ ] 37. Self-hosted Twenty CRM instance available to connect to ← **next**
-- [ ] 38. Twenty read-only connector (scoped API key, REST/GraphQL read)
-- [ ] 39. Twenty signed webhook receiver
-- [ ] 40. Twenty reconciliation poller (catches anything the webhook missed)
+- [x] 37. Self-hosted Twenty CRM instance running — official docker-compose (server/worker/db/redis), Docker Desktop installed along the way (needed a manual sudo step from the user), health check passing at http://localhost:3000
+- [x] 38. Twenty read-only connector — TwentyClient with only list_companies/list_people/list_opportunities, tested against the real running instance (4/4 tests passing, including a structural test that fails if a write method is ever added)
+- [x] 39. Twenty signed webhook receiver — HMAC-SHA256 verification (per Twenty's own spec), timing-safe comparison, stale-timestamp rejection, tampered-body rejection all proven (12/12 tests passing). Not yet registered with the real running Twenty instance — code-level proof only so far.
+- [ ] 40. Twenty reconciliation poller (catches anything the webhook missed) ← **next**
 - [ ] 41. BFF joining Observation API + Control API
 - [ ] 42. Executive dashboard — agent/run overview
 - [ ] 43. Run replay / timeline view

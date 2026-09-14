@@ -48,5 +48,5 @@ Tick it only when:
 
 -   Current phase: 1
 -   Current week: 3-4
--   Current task: Observation API live (REST snapshot + resumable SSE). Observation Plane (Steps 31-36) now functionally complete. 129/129 tests passing across all 5 packages. Next: Twenty CRM connector.
--   Overall completion: ~38%
+-   Current task: Signed webhook receiver built and tested (HMAC-SHA256, timing-safe, replay/tamper protection). 145/145 tests passing overall. Not yet wired to the live Twenty instance's webhook settings.
+-   Overall completion: ~41%
