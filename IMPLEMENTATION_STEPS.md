@@ -30,8 +30,8 @@ A flat, sequential build list — no week numbers. Check WEEKLY_ROADMAP.md if yo
 - [x] 24. Wire Control API to ledger+outbox in one DB transaction — done as part of Step 20/22 (submit_command_transaction already does this)
 - [x] 25. Dispatcher process — claims the oldest PENDING command per agent using FOR UPDATE SKIP LOCKED, proven with real concurrent threads (5 simultaneous claim attempts, exactly 1 succeeds, 24/24 control-api tests passing)
 - [x] 26. Long-poll delivery endpoint — `GET /control/v1/agents/{agent_id}/commands/poll`, proven to genuinely wait and catch a command that arrives mid-wait (29/29 tests passing); ledger now shows REQUESTED -> DELIVERED in order
-- [ ] 27. Acknowledgement handling (adapter reports result back) ← **next**
-- [ ] 28. Reconciliation job (command state vs. fresh adapter heartbeat)
+- [x] 27. Acknowledgement handling — full lifecycle REQUESTED->DELIVERED->APPLIED/FAILED/etc. proven, idempotent duplicate acks, and a FAILED ack correctly corrects the optimistic state_version back to reality (34/34 tests passing)
+- [ ] 28. Reconciliation job (command state vs. fresh adapter heartbeat) ← **next**
 - [ ] 29. Duplicate-delivery test (same command_id twice → one effect, proven)
 - [ ] 30. Restart/recovery test (queued commands survive a process restart)
 - [ ] 31. Real OpenTelemetry instrumentation in agent-runtime (replace the plain Event with OTel spans/events)

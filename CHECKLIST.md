@@ -48,5 +48,5 @@ Tick it only when:
 
 -   Current phase: 1
 -   Current week: 3-4
--   Current task: Long-poll delivery endpoint live and proven (real wait-and-catch behavior tested). 90/90 tests passing across all 4 packages.
--   Overall completion: ~24%
+-   Current task: Acknowledgement endpoint live — full command lifecycle proven end-to-end, idempotent, self-correcting on failure. 95/95 tests passing across all 4 packages.
+-   Overall completion: ~26%

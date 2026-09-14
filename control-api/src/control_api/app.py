@@ -8,6 +8,7 @@ from fastapi.responses import JSONResponse
 
 from control_sdk.command_schema import validate_command_request
 
+from .ack import TERMINAL_STATUSES, UnknownCommand, record_acknowledgement
 from .commands import submit_command as submit_command_transaction
 from .dispatcher import wait_for_command
 from .policy import StaleStateVersion, StepUpRequired, check_step_up
@@ -94,6 +95,60 @@ async def poll_for_command(
                 "reason": claimed.reason,
             }
         },
+    )
+
+
+@app.post("/control/v1/agents/{agent_id}/commands/{command_id}/ack")
+async def acknowledge_command(agent_id: str, command_id: str, request: Request) -> JSONResponse:
+    """The adapter reports back what actually happened after applying a
+    delivered command. This is what turns Delivered into Applied — CLAUDE.md
+    section 8: a command is never claimed successful just because the API
+    accepted or delivered it."""
+    try:
+        body = await request.json()
+    except Exception:
+        body = None
+
+    if not isinstance(body, dict):
+        return JSONResponse(status_code=400, content={"code": "SCHEMA_VALIDATION_FAILED", "message": "body must be a JSON object"})
+
+    status = body.get("status")
+    resulting_state = body.get("resulting_state")
+    state_version = body.get("state_version")
+
+    if (
+        status not in TERMINAL_STATUSES
+        or not isinstance(resulting_state, str)
+        or not isinstance(state_version, int)
+        or isinstance(state_version, bool)
+    ):
+        return JSONResponse(
+            status_code=400,
+            content={
+                "code": "SCHEMA_VALIDATION_FAILED",
+                "message": "status (one of APPLIED/FAILED/REJECTED/UNSUPPORTED), resulting_state (string), and state_version (integer) are required",
+            },
+        )
+
+    conn = psycopg.connect(os.environ["DATABASE_URL"])
+    try:
+        try:
+            result = record_acknowledgement(
+                conn,
+                agent_id=agent_id,
+                command_id=command_id,
+                status=status,
+                resulting_state=resulting_state,
+                state_version=state_version,
+            )
+        except UnknownCommand as exc:
+            return JSONResponse(status_code=404, content={"code": "UNKNOWN_COMMAND", "message": str(exc)})
+    finally:
+        conn.close()
+
+    return JSONResponse(
+        status_code=200,
+        content={"command_id": result.command_id, "status": result.status, "already_processed": result.already_processed},
     )
 
 
