@@ -48,5 +48,5 @@ Tick it only when:
 
 -   Current phase: 1
 -   Current week: 3-4
--   Current task: Real OpenTelemetry spans added to agent-runtime (run + step spans, correct parent/child, error status). 106/106 tests passing across all 4 packages.
--   Overall completion: ~31%
+-   Current task: Observation API live (REST snapshot + resumable SSE). Observation Plane (Steps 31-36) now functionally complete. 129/129 tests passing across all 5 packages. Next: Twenty CRM connector.
+-   Overall completion: ~38%

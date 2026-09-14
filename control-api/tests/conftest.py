@@ -24,7 +24,10 @@ _load_env_file(pathlib.Path(__file__).resolve().parents[1] / ".env")
 
 @pytest.fixture
 def pg_conn():
-    conn = psycopg.connect(os.environ["DATABASE_URL"])
+    # autocommit=True: see observation/tests/conftest.py for why — a plain
+    # execute() outside `with conn.transaction()` must not silently leave
+    # an open transaction that hides writes from other connections.
+    conn = psycopg.connect(os.environ["DATABASE_URL"], autocommit=True)
     try:
         yield conn
     finally:

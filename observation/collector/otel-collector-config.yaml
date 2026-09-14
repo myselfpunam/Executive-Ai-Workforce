@@ -1,0 +1,25 @@
+# Local dev collector — OTLP in, debug (console) out for now.
+# The Privacy Gate (Step 33) and Event Store (Step 34) will replace the
+# debug exporter with a real pipeline: allowlist/redact -> Postgres.
+
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+processors:
+  batch: {}
+
+exporters:
+  debug:
+    verbosity: detailed
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [debug]

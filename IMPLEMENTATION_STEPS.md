@@ -35,12 +35,12 @@ A flat, sequential build list — no week numbers. Check WEEKLY_ROADMAP.md if yo
 - [x] 29. Duplicate-delivery test (same command_id twice → one effect, proven) — already covered: dispatcher concurrency test (Step 25) + idempotent ack test (Step 27)
 - [x] 30. Restart/recovery test — proven end-to-end using fresh, independent connections at every phase (nothing depends on Python process memory surviving); 40/40 control-api tests passing. **Week 11-12 (Dispatcher/Long-poll/Ack/Reconciliation) complete.**
 - [x] 31. Real OpenTelemetry instrumentation in agent-runtime — one `agent.run` span per run with a child `agent.step` span per step, correct trace_id/parent linkage and error status proven (16/16 agent-runtime tests, 106/106 total). Event log kept alongside spans, not replaced.
-- [ ] 32. OTel Collector running locally (OTLP ingest) ← **next**
-- [ ] 33. Privacy Gate (allowlist / redact / normalize incoming events)
-- [ ] 34. Event Store — separate Postgres DB, append-only, evidence hashes
-- [ ] 35. Projection engine (raw events → status/cost/coverage)
-- [ ] 36. Observation API (REST snapshot + SSE)
-- [ ] 37. Self-hosted Twenty CRM instance available to connect to
+- [x] 32. OTel Collector running locally — real `otelcol` binary (no Docker on this machine), OTLP gRPC+HTTP receiver live; agent-runtime spans proven to arrive over the network with correct trace/parent linkage and attributes
+- [x] 33. Privacy Gate — allowlist (unknown fields dropped entirely) + redaction (email/API-key/card-number patterns scrubbed inside allowed fields) + normalization into `ObservationEvent`, 7/7 tests passing
+- [x] 34. Event Store — own database (executive_observation_dev), append-only + trigger-enforced, hash-chained evidence proven to catch tampering even when the trigger itself is bypassed by a superuser (11/11 observation tests passing)
+- [x] 35. Projection engine — raw events folded into a per-run summary (status, step count, duration); cost/coverage honestly omitted, no real data source yet. Fixed a real bug along the way: an earlier tamper test was permanently corrupting the shared dev DB by committing instead of rolling back. 121/121 tests passing across all 5 packages.
+- [x] 36. Observation API — `GET /observation/v1/runs/{trace_id}` snapshot + `GET /observation/v1/events/stream` resumable SSE (Last-Event-ID honored, no gaps/repeats proven). Along the way, found and fixed a real psycopg3 footgun: an un-transacted read before a write left a dangling transaction invisible to other connections — fixed via autocommit=True on test connections (both observation and control-api). 129/129 tests passing across all 5 packages. **Week 13-14 (Observation Plane) complete.**
+- [ ] 37. Self-hosted Twenty CRM instance available to connect to ← **next**
 - [ ] 38. Twenty read-only connector (scoped API key, REST/GraphQL read)
 - [ ] 39. Twenty signed webhook receiver
 - [ ] 40. Twenty reconciliation poller (catches anything the webhook missed)

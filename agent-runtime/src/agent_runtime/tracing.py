@@ -11,9 +11,17 @@ def build_tracer_provider(exporter: SpanExporter | None = None, service_name: st
     process) each get their own isolated provider instead of fighting
     over global state.
 
-    Defaults to printing spans to the console, since there's no real OTel
-    Collector yet (Step 32 swaps this for a real OTLP exporter)."""
+    Defaults to printing spans to the console. Pass an OTLP exporter (see
+    build_otlp_exporter below) to send to a real local Collector instead."""
     resource = Resource.create({"service.name": service_name})
     provider = TracerProvider(resource=resource)
     provider.add_span_processor(SimpleSpanProcessor(exporter or ConsoleSpanExporter()))
     return provider
+
+
+def build_otlp_exporter(endpoint: str = "http://localhost:4318/v1/traces") -> SpanExporter:
+    """An exporter that sends real OTLP/HTTP to a Collector — e.g. the one
+    started with observation/collector/otel-collector-config.yaml."""
+    from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
+
+    return OTLPSpanExporter(endpoint=endpoint)
