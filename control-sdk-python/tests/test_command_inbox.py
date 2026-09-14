@@ -1,5 +1,5 @@
-from agent_runtime.command_inbox import CommandInbox, CommandResult
-from agent_runtime.control_state import ControlState
+from control_sdk.command_inbox import CommandInbox, CommandResult
+from control_sdk.control_state import ControlState
 
 
 def test_same_command_id_delivered_twice_only_takes_effect_once():

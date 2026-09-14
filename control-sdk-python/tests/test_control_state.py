@@ -1,6 +1,6 @@
 import pytest
 
-from agent_runtime.control_state import ControlState, IllegalTransition, State
+from control_sdk.control_state import ControlState, IllegalTransition, State
 
 
 def test_starts_active_with_version_zero():

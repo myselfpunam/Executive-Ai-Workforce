@@ -1,0 +1,19 @@
+[project]
+name = "control-api"
+version = "0.1.0"
+description = "Control Plane API — commands, policy, ledger, outbox, dispatcher"
+requires-python = ">=3.11"
+dependencies = ["psycopg[binary]>=3.1", "fastapi>=0.115", "uvicorn>=0.30"]
+
+[project.optional-dependencies]
+dev = ["pytest", "httpx"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]

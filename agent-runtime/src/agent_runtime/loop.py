@@ -3,7 +3,9 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any, Callable
 
-from .control_state import ControlState
+from control_sdk.cancellation import CancellationToken
+from control_sdk.control_state import ControlState
+
 from .events import Event, new_id
 
 
@@ -11,11 +13,19 @@ from .events import Event, new_id
 class Step:
     """One atomic unit of work in a run. `action` is deterministic for the
     demo agent — it returns a plain dict, never calls a real model/API yet.
+
+    accepts_cancellation_token=True means `action` takes one argument (the
+    token) and may check it partway through its own work to stop early.
+    False (the default) means `action` takes no arguments and always runs
+    to completion once started — cancellation only takes effect at the next
+    safe point, not mid-step. Both are correct; it depends on whether the
+    underlying operation actually supports being interrupted.
     """
 
     name: str
-    action: Callable[[], dict[str, Any]]
+    action: Callable[..., dict[str, Any]]
     step_id: str = field(default_factory=lambda: new_id("step"))
+    accepts_cancellation_token: bool = False
 
 
 @dataclass
@@ -35,11 +45,8 @@ class Run:
 
 
 class DemoAgent:
-    """A deterministic agent: a fixed list of steps executed in order.
-
-    Safe points are marked with comments, not enforced — the Control SDK
-    (Week 5-7) is what will turn these into real pause/stop checks.
-    """
+    """A deterministic agent: a fixed list of steps executed in order,
+    controllable via the control-sdk package (ControlState, checkpointing)."""
 
     def __init__(self, name: str, steps: list[Step]):
         self.name = name
@@ -76,7 +83,10 @@ class DemoAgent:
 
             run.emit("step.started", step_id=step.step_id, data={"name": step.name})
             try:
-                result = step.action()
+                if step.accepts_cancellation_token:
+                    result = step.action(CancellationToken(control_state))
+                else:
+                    result = step.action()
             except Exception as exc:
                 run.emit("step.failed", step_id=step.step_id, data={"error": str(exc)})
                 run.status = "FAILED"
@@ -100,9 +110,9 @@ class DemoAgent:
     @staticmethod
     def _maybe_checkpoint(run: Run, control_state: ControlState, checkpoint_path: str | None) -> None:
         if checkpoint_path and run.status == "PAUSED":
-            from .checkpoint import save_checkpoint  # local import: avoids a circular import at module load time
+            from control_sdk.checkpoint import save_checkpoint
 
-            save_checkpoint(run, control_state, checkpoint_path)
+            save_checkpoint(run.run_id, run.next_step_index, control_state, checkpoint_path)
 
     @staticmethod
     def _check_safe_point(run: Run, control_state: ControlState) -> bool:

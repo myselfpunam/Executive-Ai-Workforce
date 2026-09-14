@@ -1,12 +1,23 @@
 from datetime import datetime, timedelta
 
-from agent_runtime.capabilities import Capabilities, can_issue, demo_agent_capabilities
-from agent_runtime.control_state import ControlState
-from agent_runtime.heartbeat import emit_heartbeat
+from control_sdk.capabilities import Capabilities, can_issue
+from control_sdk.control_state import ControlState
+from control_sdk.heartbeat import emit_heartbeat
 
 
-def test_demo_agent_supports_all_three_actions_with_a_fresh_heartbeat():
-    caps = demo_agent_capabilities()
+def _all_supported() -> Capabilities:
+    return Capabilities(
+        pause_supported=True,
+        stop_supported=True,
+        resume_supported=True,
+        checkpoint_mode="SAFE_POINT",
+        max_checkpoint_delay_ms=2000,
+        adapter_version="0.1.0",
+    )
+
+
+def test_all_actions_allowed_when_supported_and_heartbeat_fresh():
+    caps = _all_supported()
     hb = emit_heartbeat(ControlState(), active_run_id=None)
     now = datetime.fromisoformat(hb.emitted_at)
 
@@ -31,7 +42,7 @@ def test_unsupported_capability_blocks_the_action_even_with_a_fresh_heartbeat():
 
 
 def test_stale_heartbeat_blocks_the_action_even_when_supported():
-    caps = demo_agent_capabilities()
+    caps = _all_supported()
     hb = emit_heartbeat(ControlState(), active_run_id=None)
     long_after = datetime.fromisoformat(hb.emitted_at) + timedelta(seconds=120)
 
@@ -39,7 +50,7 @@ def test_stale_heartbeat_blocks_the_action_even_when_supported():
 
 
 def test_unknown_action_is_never_allowed():
-    caps = demo_agent_capabilities()
+    caps = _all_supported()
     hb = emit_heartbeat(ControlState(), active_run_id=None)
     now = datetime.fromisoformat(hb.emitted_at)
 

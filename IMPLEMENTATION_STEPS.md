@@ -17,16 +17,16 @@ A flat, sequential build list — no week numbers. Check WEEKLY_ROADMAP.md if yo
 - [x] 11. Heartbeat mechanism — 18/18 tests passing, stale/missing heartbeat correctly reports UNKNOWN, never guesses
 - [x] 12. Capability advertisement — 22/22 tests passing; unsupported actions and stale heartbeats both correctly block a control
 - [x] 13. Idempotent command inbox — 24/24 tests passing, a duplicate command_id never double-applies
-- [ ] 14. Package 8–13 into `control-sdk-python/` as a reusable library ← **next**
-- [ ] 15. Cancellation token support for cooperative STOP
-- [ ] 16. Port the same SDK contract to `control-sdk-ts/` (TypeScript)
-- [ ] 17. Freeze the command JSON schema + error codes (the exact contract from CLAUDE.md §11)
-- [ ] 18. PostgreSQL running locally (Control DB)
-- [ ] 19. Command ledger table (append-only)
-- [ ] 20. Transactional outbox table + pattern
-- [ ] 21. Control API skeleton — `POST /control/v1/agents/{agent_id}/commands`
-- [ ] 22. Policy engine (tenant/department scope, expected_state_version check)
-- [ ] 23. Step-up check for STOP (basic version, before full MFA)
+- [x] 14. Packaged 8–13 into `control-sdk-python/` as a standalone library — `agent-runtime` now imports it, not the reverse (16/16 + 9/9 tests passing)
+- [x] 15. Cancellation token support for cooperative STOP — 29/29 tests passing; proven a token-aware step bails out early instead of wasting work
+- [x] 16. Ported the full SDK contract to `control-sdk-ts/` — 18/18 tests passing, matching control-sdk-python's 18 exactly
+- [x] 17. Froze the command schema + error codes in both SDKs — 61/61 tests passing total; a smuggled "prompt" field is rejected before it ever reaches an agent
+- [x] 18. PostgreSQL running locally — dedicated `executive_control_app` role + `executive_control_dev` database, connection verified, isolated from Observation's future database
+- [x] 19. Command ledger table (append-only) — table + database-level UPDATE/DELETE-rejecting triggers, proven live against the real Postgres database (not just tested in application code)
+- [x] 20. Transactional outbox table + pattern — proven live: a failure partway through the shared transaction rolls back BOTH the ledger and outbox writes, no partial state (2/2 tests passing). control-api built in Python.
+- [x] 21. Control API skeleton — `POST /control/v1/agents/{agent_id}/commands` live (FastAPI), reuses the SDK's validator as the single source of truth, proven end-to-end into the real database (7/7 tests passing)
+- [x] 22. Policy engine — expected_state_version optimistic-concurrency check live and proven (stale version correctly rejected with 409); tenant/department scope deliberately deferred to Week 18 (needs real auth first). 74/74 tests passing across all packages.
+- [ ] 23. Step-up check for STOP (basic version, before full MFA) ← **next**
 - [ ] 24. Wire Control API to ledger+outbox in one DB transaction
 - [ ] 25. Dispatcher process (reads outbox, delivers toward the adapter)
 - [ ] 26. Long-poll delivery endpoint (adapter pulls commands)

@@ -1,7 +1,7 @@
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 
-from agent_runtime.control_state import ControlState, State
-from agent_runtime.heartbeat import effective_state, emit_heartbeat
+from control_sdk.control_state import ControlState, State
+from control_sdk.heartbeat import effective_state, emit_heartbeat
 
 
 def test_fresh_heartbeat_reports_the_real_state():

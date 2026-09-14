@@ -20,19 +20,6 @@ class Capabilities:
     adapter_version: str
 
 
-def demo_agent_capabilities() -> Capabilities:
-    """What our deterministic demo agent can do — everything, since it's
-    built with control_state + checkpoint support from the start."""
-    return Capabilities(
-        pause_supported=True,
-        stop_supported=True,
-        resume_supported=True,
-        checkpoint_mode="SAFE_POINT",
-        max_checkpoint_delay_ms=2000,
-        adapter_version="0.1.0",
-    )
-
-
 _ACTION_FLAG = {
     "PAUSE": "pause_supported",
     "STOP": "stop_supported",

@@ -48,5 +48,5 @@ Tick it only when:
 
 -   Current phase: 1
 -   Current week: 3-4
--   Current task: All Control SDK ingredients built and tested inside agent-runtime (state machine, safe points, checkpoint, heartbeat, capabilities, idempotent inbox — 24/24 tests passing). Not yet packaged as a reusable library.
--   Overall completion: ~10%
+-   Current task: Policy engine's state_version check live (409 on stale version, proven with concurrent-style tests). 74/74 tests passing across all 4 packages.
+-   Overall completion: ~20%

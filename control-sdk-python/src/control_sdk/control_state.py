@@ -10,8 +10,8 @@ class State(str, Enum):
     RESUME_REQUESTED = "RESUME_REQUESTED"
     STOP_REQUESTED = "STOP_REQUESTED"
     STOPPED = "STOPPED"
-    # Not reached by any transition below — set by the heartbeat layer later
-    # (Week/Step 11) when the last heartbeat is stale. Never guessed.
+    # Not reached by any transition below — set by the heartbeat layer
+    # (heartbeat.py) when the last heartbeat is stale. Never guessed.
     UNKNOWN = "UNKNOWN"
 
 
@@ -33,9 +33,9 @@ class IllegalTransition(Exception):
 
 
 class ControlState:
-    """In-memory control state for one agent/run. No network, no persistence
-    yet (Step 10) — just the legal-transition logic, kept small enough to
-    test exhaustively on its own.
+    """In-memory control state for one agent/run. No network, no
+    persistence of its own (see checkpoint.py) — just the legal-transition
+    logic, kept small enough to test exhaustively on its own.
 
     state_version increments on every successful transition. This is the
     same counter the Control API will later use for optimistic concurrency

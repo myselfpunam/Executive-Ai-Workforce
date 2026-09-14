@@ -1,4 +1,5 @@
-from agent_runtime.control_state import ControlState, State
+from control_sdk.control_state import ControlState, State
+
 from agent_runtime.loop import DemoAgent, Step
 
 
