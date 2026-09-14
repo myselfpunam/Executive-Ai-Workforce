@@ -48,5 +48,5 @@ Tick it only when:
 
 -   Current phase: 1
 -   Current week: 3-4
--   Current task: Policy engine's state_version check live (409 on stale version, proven with concurrent-style tests). 74/74 tests passing across all 4 packages.
--   Overall completion: ~20%
+-   Current task: Long-poll delivery endpoint live and proven (real wait-and-catch behavior tested). 90/90 tests passing across all 4 packages.
+-   Overall completion: ~24%

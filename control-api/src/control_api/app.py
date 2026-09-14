@@ -9,7 +9,8 @@ from fastapi.responses import JSONResponse
 from control_sdk.command_schema import validate_command_request
 
 from .commands import submit_command as submit_command_transaction
-from .policy import StaleStateVersion
+from .dispatcher import wait_for_command
+from .policy import StaleStateVersion, StepUpRequired, check_step_up
 
 app = FastAPI(title="Control API")
 
@@ -31,6 +32,11 @@ async def submit_command(agent_id: str, request: Request) -> JSONResponse:
     error = validate_command_request(body)
     if error is not None:
         return JSONResponse(status_code=400, content={"code": error.code, "message": error.message})
+
+    try:
+        check_step_up(body["action"], request.headers.get("x-step-up-token"))
+    except StepUpRequired as exc:
+        return JSONResponse(status_code=401, content={"code": "STEP_UP_REQUIRED", "message": str(exc)})
 
     conn = psycopg.connect(os.environ["DATABASE_URL"])
     try:
@@ -55,6 +61,40 @@ async def submit_command(agent_id: str, request: Request) -> JSONResponse:
         conn.close()
 
     return JSONResponse(status_code=202, content={"command_id": command_id, "status": "QUEUED"})
+
+
+@app.get("/control/v1/agents/{agent_id}/commands/poll")
+async def poll_for_command(
+    agent_id: str,
+    timeout_seconds: float = 20.0,
+    poll_interval_seconds: float = 0.5,
+) -> JSONResponse:
+    """The agent adapter calls this — outbound only, no inbound port on
+    the agent side. timeout_seconds/poll_interval_seconds are overridable
+    mainly so tests don't have to wait 20 real seconds."""
+    conn = psycopg.connect(os.environ["DATABASE_URL"])
+    try:
+        claimed = await wait_for_command(
+            conn, agent_id, timeout_seconds=timeout_seconds, poll_interval_seconds=poll_interval_seconds
+        )
+    finally:
+        conn.close()
+
+    if claimed is None:
+        return JSONResponse(status_code=200, content={"command": None})
+
+    return JSONResponse(
+        status_code=200,
+        content={
+            "command": {
+                "command_id": claimed.command_id,
+                "agent_id": claimed.agent_id,
+                "action": claimed.action,
+                "expected_state_version": claimed.expected_state_version,
+                "reason": claimed.reason,
+            }
+        },
+    )
 
 
 if __name__ == "__main__":

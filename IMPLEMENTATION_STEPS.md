@@ -26,11 +26,11 @@ A flat, sequential build list — no week numbers. Check WEEKLY_ROADMAP.md if yo
 - [x] 20. Transactional outbox table + pattern — proven live: a failure partway through the shared transaction rolls back BOTH the ledger and outbox writes, no partial state (2/2 tests passing). control-api built in Python.
 - [x] 21. Control API skeleton — `POST /control/v1/agents/{agent_id}/commands` live (FastAPI), reuses the SDK's validator as the single source of truth, proven end-to-end into the real database (7/7 tests passing)
 - [x] 22. Policy engine — expected_state_version optimistic-concurrency check live and proven (stale version correctly rejected with 409); tenant/department scope deliberately deferred to Week 18 (needs real auth first). 74/74 tests passing across all packages.
-- [ ] 23. Step-up check for STOP (basic version, before full MFA) ← **next**
-- [ ] 24. Wire Control API to ledger+outbox in one DB transaction
-- [ ] 25. Dispatcher process (reads outbox, delivers toward the adapter)
-- [ ] 26. Long-poll delivery endpoint (adapter pulls commands)
-- [ ] 27. Acknowledgement handling (adapter reports result back)
+- [x] 23. Step-up check for STOP — placeholder token required only for STOP, PAUSE/RESUME unaffected (18/18 control-api tests passing). Real MFA still deferred to Week 18.
+- [x] 24. Wire Control API to ledger+outbox in one DB transaction — done as part of Step 20/22 (submit_command_transaction already does this)
+- [x] 25. Dispatcher process — claims the oldest PENDING command per agent using FOR UPDATE SKIP LOCKED, proven with real concurrent threads (5 simultaneous claim attempts, exactly 1 succeeds, 24/24 control-api tests passing)
+- [x] 26. Long-poll delivery endpoint — `GET /control/v1/agents/{agent_id}/commands/poll`, proven to genuinely wait and catch a command that arrives mid-wait (29/29 tests passing); ledger now shows REQUESTED -> DELIVERED in order
+- [ ] 27. Acknowledgement handling (adapter reports result back) ← **next**
 - [ ] 28. Reconciliation job (command state vs. fresh adapter heartbeat)
 - [ ] 29. Duplicate-delivery test (same command_id twice → one effect, proven)
 - [ ] 30. Restart/recovery test (queued commands survive a process restart)

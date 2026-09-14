@@ -1,6 +1,26 @@
 from __future__ import annotations
 
+import os
+
 import psycopg
+
+
+class StepUpRequired(Exception):
+    pass
+
+
+def check_step_up(action: str, provided_token: str | None) -> None:
+    """CLAUDE.md section 13: "STOP requires step-up authentication."
+
+    This is a deliberate placeholder for real MFA/OIDC (Week 18) — it only
+    proves the architectural shape now: STOP is checked differently from
+    PAUSE/RESUME. STEP_UP_TOKEN is NOT a real secret and this whole
+    function will be replaced once real auth exists."""
+    if action != "STOP":
+        return
+    expected = os.environ.get("STEP_UP_TOKEN", "dev-step-up-token")
+    if provided_token != expected:
+        raise StepUpRequired("STOP requires a valid step-up token")
 
 
 class StaleStateVersion(Exception):
