@@ -48,5 +48,5 @@ Tick it only when:
 
 -   Current phase: 1
 -   Current week: 3-4
--   Current task: Acknowledgement endpoint live — full command lifecycle proven end-to-end, idempotent, self-correcting on failure. 95/95 tests passing across all 4 packages.
--   Overall completion: ~26%
+-   Current task: Restart/recovery proven. Control Plane (Steps 8-30) is now functionally complete: SDKs, ledger, outbox, API, policy, step-up, dispatcher, long-poll, ack, reconciliation. 101/101 tests passing across all 4 packages. Next: Observation Plane (OTel).
+-   Overall completion: ~30%
