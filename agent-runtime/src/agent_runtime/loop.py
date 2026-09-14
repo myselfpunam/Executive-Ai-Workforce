@@ -5,6 +5,8 @@ from typing import Any, Callable
 
 from control_sdk.cancellation import CancellationToken
 from control_sdk.control_state import ControlState
+from opentelemetry import trace
+from opentelemetry.trace import Status, StatusCode, Tracer
 
 from .events import Event, new_id
 
@@ -46,11 +48,19 @@ class Run:
 
 class DemoAgent:
     """A deterministic agent: a fixed list of steps executed in order,
-    controllable via the control-sdk package (ControlState, checkpointing)."""
+    controllable via the control-sdk package (ControlState, checkpointing).
 
-    def __init__(self, name: str, steps: list[Step]):
+    Alongside the plain Event log (used by our own tests and the future
+    Control audit trail), every run now also emits real OpenTelemetry
+    spans — one "agent.run" span per run, with one child "agent.step" span
+    per step. The two are independent for now: Event stays what our tests
+    assert on; spans are what Step 32's OTel Collector will consume.
+    """
+
+    def __init__(self, name: str, steps: list[Step], tracer: Tracer | None = None):
         self.name = name
         self.steps = steps
+        self.tracer = tracer or trace.get_tracer("agent_runtime")
 
     def run(
         self,
@@ -71,40 +81,56 @@ class DemoAgent:
             run.emit("run.started")
             start_index = 0
 
-        for index in range(start_index, len(self.steps)):
-            step = self.steps[index]
-            run.next_step_index = index
+        with self.tracer.start_as_current_span(
+            "agent.run",
+            attributes={"run_id": run.run_id, "agent_name": self.name, "resumed": bool(resume)},
+        ) as run_span:
+            for index in range(start_index, len(self.steps)):
+                step = self.steps[index]
+                run.next_step_index = index
 
-            # SAFE POINT: before step. PAUSE/STOP reject NEW work, so this
-            # check must happen before a step is allowed to start.
-            if self._check_safe_point(run, control_state):
-                self._maybe_checkpoint(run, control_state, checkpoint_path)
-                return run
+                # SAFE POINT: before step. PAUSE/STOP reject NEW work, so
+                # this check must happen before a step is allowed to start.
+                if self._check_safe_point(run, control_state):
+                    self._maybe_checkpoint(run, control_state, checkpoint_path)
+                    run_span.set_attribute("run.status", run.status)
+                    return run
 
-            run.emit("step.started", step_id=step.step_id, data={"name": step.name})
-            try:
-                if step.accepts_cancellation_token:
-                    result = step.action(CancellationToken(control_state))
-                else:
-                    result = step.action()
-            except Exception as exc:
-                run.emit("step.failed", step_id=step.step_id, data={"error": str(exc)})
-                run.status = "FAILED"
-                run.emit("run.failed")
-                return run
-            run.emit("step.completed", step_id=step.step_id, data=result)
-            run.next_step_index = index + 1
+                with self.tracer.start_as_current_span(
+                    "agent.step",
+                    attributes={"step_name": step.name, "step_id": step.step_id},
+                ) as step_span:
+                    run.emit("step.started", step_id=step.step_id, data={"name": step.name})
+                    try:
+                        if step.accepts_cancellation_token:
+                            result = step.action(CancellationToken(control_state))
+                        else:
+                            result = step.action()
+                    except Exception as exc:
+                        step_span.record_exception(exc)
+                        step_span.set_status(Status(StatusCode.ERROR))
+                        run.emit("step.failed", step_id=step.step_id, data={"error": str(exc)})
+                        run.status = "FAILED"
+                        run.emit("run.failed")
+                        run_span.set_status(Status(StatusCode.ERROR))
+                        run_span.set_attribute("run.status", run.status)
+                        return run
+                    run.emit("step.completed", step_id=step.step_id, data=result)
+                    run.next_step_index = index + 1
 
-            # SAFE POINT: after step. The step's own action may itself have
-            # triggered a pause/stop request (e.g. an external command
-            # arrived while the step was running) — catch that here too,
-            # before starting the next step.
-            if self._check_safe_point(run, control_state):
-                self._maybe_checkpoint(run, control_state, checkpoint_path)
-                return run
+                # SAFE POINT: after step. The step's own action may itself
+                # have triggered a pause/stop request (e.g. an external
+                # command arrived while the step was running) — catch that
+                # here too, before starting the next step.
+                if self._check_safe_point(run, control_state):
+                    self._maybe_checkpoint(run, control_state, checkpoint_path)
+                    run_span.set_attribute("run.status", run.status)
+                    return run
 
-        run.status = "COMPLETED"
-        run.emit("run.completed")
+            run.status = "COMPLETED"
+            run.emit("run.completed")
+            run_span.set_attribute("run.status", run.status)
+
         return run
 
     @staticmethod

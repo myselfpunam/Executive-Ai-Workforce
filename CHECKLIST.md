@@ -48,5 +48,5 @@ Tick it only when:
 
 -   Current phase: 1
 -   Current week: 3-4
--   Current task: Restart/recovery proven. Control Plane (Steps 8-30) is now functionally complete: SDKs, ledger, outbox, API, policy, step-up, dispatcher, long-poll, ack, reconciliation. 101/101 tests passing across all 4 packages. Next: Observation Plane (OTel).
--   Overall completion: ~30%
+-   Current task: Real OpenTelemetry spans added to agent-runtime (run + step spans, correct parent/child, error status). 106/106 tests passing across all 4 packages.
+-   Overall completion: ~31%

@@ -34,8 +34,8 @@ A flat, sequential build list — no week numbers. Check WEEKLY_ROADMAP.md if yo
 - [x] 28. Reconciliation job — stale DELIVERED commands past a TTL are marked EXPIRED (not guessed APPLIED), idempotent across repeated runs (38/38 tests passing). Heartbeat-based reconciliation deferred until agents can heartbeat into the Control API.
 - [x] 29. Duplicate-delivery test (same command_id twice → one effect, proven) — already covered: dispatcher concurrency test (Step 25) + idempotent ack test (Step 27)
 - [x] 30. Restart/recovery test — proven end-to-end using fresh, independent connections at every phase (nothing depends on Python process memory surviving); 40/40 control-api tests passing. **Week 11-12 (Dispatcher/Long-poll/Ack/Reconciliation) complete.**
-- [ ] 31. Real OpenTelemetry instrumentation in agent-runtime (replace the plain Event with OTel spans/events) ← **next**
-- [ ] 32. OTel Collector running locally (OTLP ingest)
+- [x] 31. Real OpenTelemetry instrumentation in agent-runtime — one `agent.run` span per run with a child `agent.step` span per step, correct trace_id/parent linkage and error status proven (16/16 agent-runtime tests, 106/106 total). Event log kept alongside spans, not replaced.
+- [ ] 32. OTel Collector running locally (OTLP ingest) ← **next**
 - [ ] 33. Privacy Gate (allowlist / redact / normalize incoming events)
 - [ ] 34. Event Store — separate Postgres DB, append-only, evidence hashes
 - [ ] 35. Projection engine (raw events → status/cost/coverage)
