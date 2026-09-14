@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Executive AI Workforce Control Room</title>
+<style>
+  :root {
+    color-scheme: light;
+    --bg: #f7f8fa;
+    --card: #ffffff;
+    --border: #e3e6eb;
+    --text: #1a1d21;
+    --muted: #6b7280;
+    --accent: #2563eb;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding: 24px;
+  }
+  header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  h1 { font-size: 20px; margin: 0; }
+  .badge {
+    font-size: 12px;
+    color: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 4px 10px;
+    background: var(--card);
+  }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--border); }
+  th { color: var(--muted); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; }
+  tr:last-child td { border-bottom: none; }
+  .status {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .status-COMPLETED { background: #dcfce7; color: #166534; }
+  .status-FAILED { background: #fee2e2; color: #991b1b; }
+  .status-PAUSED { background: #fef9c3; color: #854d0e; }
+  .status-CANCELLED { background: #e5e7eb; color: #374151; }
+  .empty, .error { padding: 32px; text-align: center; color: var(--muted); }
+  .error { color: #991b1b; }
+  footer { margin-top: 12px; font-size: 12px; color: var(--muted); }
+</style>
+</head>
+<body>
+  <header>
+    <h1>Executive AI Workforce Control Room</h1>
+    <span class="badge" id="refresh-status">loading…</span>
+  </header>
+
+  <div class="card">
+    <table>
+      <thead>
+        <tr>
+          <th>Agent</th>
+          <th>Status</th>
+          <th>Steps</th>
+          <th>Duration</th>
+          <th>Started</th>
+        </tr>
+      </thead>
+      <tbody id="runs-body">
+        <tr><td colspan="5" class="empty">Loading runs…</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <footer>Read-only observation. This screen never issues commands directly — see CLAUDE.md.</footer>
+
+  <script>
+    async function loadRuns() {
+      const status = document.getElementById("refresh-status");
+      const body = document.getElementById("runs-body");
+      try {
+        const response = await fetch("/bff/runs");
+        if (!response.ok) throw new Error("HTTP " + response.status);
+        const runs = await response.json();
+
+        if (runs.length === 0) {
+          body.innerHTML = '<tr><td colspan="5" class="empty">No runs yet. Run the demo agent to see data here.</td></tr>';
+        } else {
+          body.innerHTML = runs.map(function (run) {
+            var statusClass = "status-" + (run.status || "UNKNOWN");
+            return "<tr>" +
+              "<td>" + (run.agent_name || "—") + "</td>" +
+              "<td><span class=\"status " + statusClass + "\">" + (run.status || "UNKNOWN") + "</span></td>" +
+              "<td>" + run.step_count + "</td>" +
+              "<td>" + run.duration_seconds.toFixed(2) + "s</td>" +
+              "<td>" + new Date(run.started_at).toLocaleString() + "</td>" +
+              "</tr>";
+          }).join("");
+        }
+        status.textContent = "updated " + new Date().toLocaleTimeString();
+      } catch (err) {
+        body.innerHTML = '<tr><td colspan="5" class="error">Could not load runs: ' + err.message + "</td></tr>";
+        status.textContent = "error";
+      }
+    }
+
+    loadRuns();
+    setInterval(loadRuns, 5000);
+  </script>
+</body>
+</html>

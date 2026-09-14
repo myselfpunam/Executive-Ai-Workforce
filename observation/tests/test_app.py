@@ -53,6 +53,18 @@ def test_get_run_returns_the_projection_for_a_known_trace(pg_conn):
     assert body["step_count"] == 1
 
 
+def test_get_recent_runs_includes_a_freshly_seeded_run(pg_conn):
+    trace_id = uuid.uuid4().hex
+    run_id = f"run_{uuid.uuid4().hex[:8]}"
+    _seed_completed_run(pg_conn, trace_id, run_id)
+
+    response = client.get("/observation/v1/runs")
+
+    assert response.status_code == 200
+    run_ids = [r["run_id"] for r in response.json()]
+    assert run_id in run_ids
+
+
 def test_get_run_returns_404_for_an_unknown_trace():
     response = client.get(f"/observation/v1/runs/{uuid.uuid4().hex}")
 

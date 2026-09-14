@@ -59,3 +59,27 @@ def project_run(conn: psycopg.Connection, trace_id: str) -> RunProjection | None
         ended_at=end_time,
         duration_seconds=(end_dt - start_dt).total_seconds(),
     )
+
+
+def list_recent_runs(conn: psycopg.Connection, limit: int = 50) -> list[RunProjection]:
+    """The dashboard's initial "give me the overview" snapshot — every
+    other recent run, most recent first. Live updates after this initial
+    load come from the SSE stream (Step 36), not from re-polling this."""
+    with conn.cursor() as cur:
+        cur.execute(
+            """
+            SELECT trace_id FROM observation_events
+            WHERE name = 'agent.run'
+            ORDER BY event_id DESC
+            LIMIT %s
+            """,
+            (limit,),
+        )
+        trace_ids = [row[0] for row in cur.fetchall()]
+
+    projections = []
+    for trace_id in trace_ids:
+        projection = project_run(conn, trace_id)
+        if projection is not None:
+            projections.append(projection)
+    return projections

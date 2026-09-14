@@ -48,5 +48,5 @@ Tick it only when:
 
 -   Current phase: 1
 -   Current week: 3-4
--   Current task: BFF built (TypeScript/Node, proxies Control API + Observation API, honest 502 on upstream failure). 154/154 tests passing overall. Next: the actual dashboard UI.
--   Overall completion: ~44%
+-   Current task: First real browser-visible dashboard live at http://localhost:8080, showing genuine run data end-to-end (agent -> OTel -> Privacy Gate -> Event Store -> Projection -> Observation API -> BFF). 159/159 tests passing across all 7 packages. Known cleanup item: tests and manual use currently share one dev database, polluting it with test data — should be separated later.
+-   Overall completion: ~46%

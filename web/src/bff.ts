@@ -1,4 +1,10 @@
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from "node:http";
+import { readFile } from "node:fs/promises";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const DASHBOARD_HTML_PATH = join(__dirname, "..", "public", "index.html");
 
 // No extra HTTP framework — Node's built-in http server + fetch are
 // enough for a handful of routes (same "native tools are often enough"
@@ -35,8 +41,22 @@ export function createBffServer(config: BffConfig): Server {
     try {
       const url = new URL(req.url ?? "/", "http://localhost");
 
+      if (req.method === "GET" && (url.pathname === "/" || url.pathname === "/dashboard")) {
+        const html = await readFile(DASHBOARD_HTML_PATH, "utf-8");
+        res.writeHead(200, { "content-type": "text/html; charset=utf-8" });
+        res.end(html);
+        return;
+      }
+
       if (req.method === "GET" && url.pathname === "/bff/health") {
         sendJson(res, 200, { status: "ok" });
+        return;
+      }
+
+      if (req.method === "GET" && url.pathname === "/bff/runs") {
+        const upstream = await fetch(`${config.observationApiBaseUrl}/observation/v1/runs`);
+        const body = await upstream.json();
+        sendJson(res, upstream.status, body);
         return;
       }
 

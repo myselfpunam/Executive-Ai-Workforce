@@ -89,6 +89,44 @@ test("POST /bff/agents/:agentId/commands proxies to the Control API with the sam
   }
 });
 
+test("GET /bff/runs proxies the Observation API's run list", async () => {
+  const observationStub = jsonStubServer(200, [{ run_id: "run_1", status: "COMPLETED" }]);
+  const observation = await listenEphemeral(observationStub);
+  const bffServer = createBffServer({
+    controlApiBaseUrl: "http://localhost:1",
+    observationApiBaseUrl: `http://localhost:${observation.port}`,
+  });
+  const bff = await listenEphemeral(bffServer);
+
+  try {
+    const response = await fetch(`http://localhost:${bff.port}/bff/runs`);
+    const body = (await response.json()) as Array<{ run_id: string }>;
+
+    assert.equal(response.status, 200);
+    assert.equal(body.length, 1);
+    assert.equal(body[0]?.run_id, "run_1");
+  } finally {
+    await bff.close();
+    await observation.close();
+  }
+});
+
+test("GET / serves the dashboard HTML page", async () => {
+  const bffServer = createBffServer({ controlApiBaseUrl: "http://localhost:1", observationApiBaseUrl: "http://localhost:1" });
+  const bff = await listenEphemeral(bffServer);
+
+  try {
+    const response = await fetch(`http://localhost:${bff.port}/`);
+    const html = await response.text();
+
+    assert.equal(response.status, 200);
+    assert.match(response.headers.get("content-type") ?? "", /text\/html/);
+    assert.match(html, /Executive AI Workforce Control Room/);
+  } finally {
+    await bff.close();
+  }
+});
+
 test("an unknown route returns 404 from the BFF itself", async () => {
   const bffServer = createBffServer({ controlApiBaseUrl: "http://localhost:1", observationApiBaseUrl: "http://localhost:1" });
   const bff = await listenEphemeral(bffServer);

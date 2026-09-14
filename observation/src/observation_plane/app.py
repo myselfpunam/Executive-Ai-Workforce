@@ -7,10 +7,21 @@ import psycopg
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse, StreamingResponse
 
-from .projection import project_run
+from .projection import list_recent_runs, project_run
 from .sse import stream_events
 
 app = FastAPI(title="Observation API")
+
+
+@app.get("/observation/v1/runs")
+async def get_recent_runs(limit: int = 50) -> JSONResponse:
+    conn = psycopg.connect(os.environ["DATABASE_URL"])
+    try:
+        projections = list_recent_runs(conn, limit=limit)
+    finally:
+        conn.close()
+
+    return JSONResponse(status_code=200, content=[asdict(p) for p in projections])
 
 
 @app.get("/observation/v1/runs/{trace_id}")

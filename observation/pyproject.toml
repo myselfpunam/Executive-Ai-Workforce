@@ -3,7 +3,7 @@ name = "observation-plane"
 version = "0.1.0"
 description = "Observation Plane — Privacy Gate, Event Store, Projection, Observation API"
 requires-python = ">=3.11"
-dependencies = ["psycopg[binary]>=3.1", "fastapi>=0.115", "uvicorn>=0.30"]
+dependencies = ["psycopg[binary]>=3.1", "fastapi>=0.115", "uvicorn>=0.30", "opentelemetry-sdk>=1.27"]
 
 [project.optional-dependencies]
 dev = ["pytest", "httpx"]

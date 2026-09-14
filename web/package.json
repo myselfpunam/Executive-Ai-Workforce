@@ -6,7 +6,8 @@
   "type": "module",
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "test": "node --test"
+    "test": "node --test",
+    "start": "node src/server.ts"
   },
   "devDependencies": {
     "@types/node": "^26.5.1",

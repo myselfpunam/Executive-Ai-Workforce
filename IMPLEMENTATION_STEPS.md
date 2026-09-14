@@ -45,8 +45,8 @@ A flat, sequential build list — no week numbers. Check WEEKLY_ROADMAP.md if yo
 - [x] 39. Twenty signed webhook receiver — HMAC-SHA256 verification (per Twenty's own spec), timing-safe comparison, stale-timestamp rejection, tampered-body rejection all proven (12/12 tests passing). Not yet registered with the real running Twenty instance — code-level proof only so far.
 - [x] 40. Twenty reconciliation poller — cursor-based "what's new since last check" proven against the real running instance, including that reconciling twice with the same cursor finds nothing new (16/16 twenty-connector tests passing). **Week 15 (Twenty CRM Integration) complete.**
 - [x] 41. BFF joining Observation API + Control API — TypeScript/Node, zero runtime dependencies (built-in http + fetch), proxies both APIs and fails honestly (502) rather than silently on an unreachable upstream (5/5 tests passing)
-- [ ] 42. Executive dashboard — agent/run overview ← **next**
-- [ ] 43. Run replay / timeline view
+- [x] 42. Executive dashboard — agent/run overview. Along the way, closed the Observation Plane's real gap: a new `ObservationStoreExporter` (OTel SDK exporter) feeds agent-runtime spans through the Privacy Gate into the Event Store; added `GET /observation/v1/runs` + `GET /bff/runs`; built a real (no-framework) dashboard page at http://localhost:8080 showing live run data, auto-refreshing every 5s. Proven fully end-to-end with a real demo agent run appearing on the page. 159/159 tests passing across all 7 packages.
+- [ ] 43. Run replay / timeline view ← **next**
 - [ ] 44. CRM context panel (Twenty widget, view-only, deep link)
 - [ ] 45. Command controls UI — the three buttons, wired to the real Control API
 - [ ] 46. Command proof/status UI (Requested → ... → Applied, shown honestly)
