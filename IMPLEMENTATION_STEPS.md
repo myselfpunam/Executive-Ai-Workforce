@@ -43,9 +43,9 @@ A flat, sequential build list — no week numbers. Check WEEKLY_ROADMAP.md if yo
 - [x] 37. Self-hosted Twenty CRM instance running — official docker-compose (server/worker/db/redis), Docker Desktop installed along the way (needed a manual sudo step from the user), health check passing at http://localhost:3000
 - [x] 38. Twenty read-only connector — TwentyClient with only list_companies/list_people/list_opportunities, tested against the real running instance (4/4 tests passing, including a structural test that fails if a write method is ever added)
 - [x] 39. Twenty signed webhook receiver — HMAC-SHA256 verification (per Twenty's own spec), timing-safe comparison, stale-timestamp rejection, tampered-body rejection all proven (12/12 tests passing). Not yet registered with the real running Twenty instance — code-level proof only so far.
-- [ ] 40. Twenty reconciliation poller (catches anything the webhook missed) ← **next**
-- [ ] 41. BFF joining Observation API + Control API
-- [ ] 42. Executive dashboard — agent/run overview
+- [x] 40. Twenty reconciliation poller — cursor-based "what's new since last check" proven against the real running instance, including that reconciling twice with the same cursor finds nothing new (16/16 twenty-connector tests passing). **Week 15 (Twenty CRM Integration) complete.**
+- [x] 41. BFF joining Observation API + Control API — TypeScript/Node, zero runtime dependencies (built-in http + fetch), proxies both APIs and fails honestly (502) rather than silently on an unreachable upstream (5/5 tests passing)
+- [ ] 42. Executive dashboard — agent/run overview ← **next**
 - [ ] 43. Run replay / timeline view
 - [ ] 44. CRM context panel (Twenty widget, view-only, deep link)
 - [ ] 45. Command controls UI — the three buttons, wired to the real Control API

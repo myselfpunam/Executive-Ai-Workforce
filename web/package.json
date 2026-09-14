@@ -1,0 +1,15 @@
+{
+  "name": "web",
+  "version": "0.1.0",
+  "description": "BFF + Executive Dashboard (Executive Experience plane)",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "node --test"
+  },
+  "devDependencies": {
+    "@types/node": "^26.5.1",
+    "typescript": "^7.0.2"
+  }
+}

@@ -48,5 +48,5 @@ Tick it only when:
 
 -   Current phase: 1
 -   Current week: 3-4
--   Current task: Signed webhook receiver built and tested (HMAC-SHA256, timing-safe, replay/tamper protection). 145/145 tests passing overall. Not yet wired to the live Twenty instance's webhook settings.
--   Overall completion: ~41%
+-   Current task: BFF built (TypeScript/Node, proxies Control API + Observation API, honest 502 on upstream failure). 154/154 tests passing overall. Next: the actual dashboard UI.
+-   Overall completion: ~44%
